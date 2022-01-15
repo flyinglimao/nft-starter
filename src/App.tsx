@@ -18,6 +18,9 @@ function App() {
             margin: 0;
             font-family: "Cabin", sans-serif;
           }
+          .custom-html-style {
+            text-align: center;
+          }
         `}
       />
       <div className="app">

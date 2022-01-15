@@ -15,7 +15,7 @@ const FormBox = styled(Paper)`
   padding: 4rem;
 `;
 
-interface Token {
+export interface Token {
   tokenImage: string;
   tokenName: string;
   tokenDescription: string;
@@ -23,7 +23,7 @@ interface Token {
   tokenAmount: number;
   tokenWebsite: string;
 }
-interface Form {
+export interface Form {
   collectionName: string;
   collectionSymbol: string;
   collectionDescription: string;
@@ -61,8 +61,8 @@ export default function (): JSX.Element {
     collectionWebsite: "",
     collectionRoyalty: 0,
     collectionRoyaltyRecipient: "",
-    saleMode: "",
-    distributionMode: "",
+    saleMode: "free",
+    distributionMode: "direct",
     saleStartAt: new Date(),
     saleEndAt: new Date(new Date().getTime() + 86400 * 1000 * 7),
     quotaPerAddr: 1,

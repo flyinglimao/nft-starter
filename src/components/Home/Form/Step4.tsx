@@ -73,7 +73,7 @@ export default function (): JSX.Element {
             The image is used as banner.
           </Typography>
           <TextField
-            label="Enter Collection Image *"
+            label="Enter Sale Banner Image *"
             variant="standard"
             fullWidth
             disabled
@@ -87,8 +87,17 @@ export default function (): JSX.Element {
                     type="file"
                     style={{ display: "none" }}
                     onChange={(evt) => {
-                      if (evt.target.files?.[0])
+                      if (evt.target.files?.[0]) {
                         setBannerImageName(evt.target.files?.[0].name);
+                        const fileReader = new FileReader();
+                        fileReader.onloadend = (evt) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            banner: evt.target.result as string,
+                          }));
+                        };
+                        fileReader.readAsDataURL(evt.target.files?.[0]);
+                      }
                     }}
                   />
                   <Button variant="contained" component="span">
@@ -126,7 +135,23 @@ export default function (): JSX.Element {
           <Typography variant="h5" gutterBottom>
             Preview Website
           </Typography>
-          <Button variant="contained">Preview Sale Website</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              window.localStorage.setItem(
+                "preview",
+                JSON.stringify({
+                  collectionName: form.collectionName,
+                  tokens: form.tokens,
+                  banner: form.banner,
+                  introduction: form.introduction,
+                })
+              );
+              open("/preview", "_blank");
+            }}
+          >
+            Preview Sale Website
+          </Button>
         </CardContent>
       </FieldCard>
       <Box
