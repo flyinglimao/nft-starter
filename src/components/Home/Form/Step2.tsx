@@ -9,6 +9,7 @@ import {
   RadioGroup,
   TextField,
   TextFieldProps,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import DateTimePicker from "@mui/lab/DateTimePicker";
@@ -31,7 +32,7 @@ const SaleModeRadioGroup = styled(RadioGroup)`
   }
 `;
 
-export default function (): JSX.Element {
+export default function Step2(): JSX.Element {
   const [form, setForm] = useContext(FormContext);
 
   return (
@@ -244,12 +245,29 @@ export default function (): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <Button
-          variant="contained"
-          onClick={() => setForm((prev) => ({ ...prev, step: 3 }))}
+        <Tooltip
+          title={
+            form.saleEndAt < new Date()
+              ? "Sale can't end before now"
+              : form.saleEndAt <= form.saleStartAt
+              ? "Sale can't end before start"
+              : ""
+          }
+          placement="left"
         >
-          Next
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              onClick={() => setForm((prev) => ({ ...prev, step: 3 }))}
+              disabled={
+                form.saleEndAt < new Date() ||
+                form.saleEndAt <= form.saleStartAt
+              }
+            >
+              Next
+            </Button>
+          </span>
+        </Tooltip>
         <Button
           variant="text"
           color="secondary"

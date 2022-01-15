@@ -28,7 +28,7 @@ const IntroBox = styled(Box)`
   column-gap: 80px;
 `;
 
-export default function (): JSX.Element {
+export default function Intro(): JSX.Element {
   return (
     <IntroContainer maxWidth={false} disableGutters>
       <Container maxWidth="lg">

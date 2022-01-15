@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,10 @@ import {
 } from "@mui/material";
 import styled from "@emotion/styled";
 import { FormContext } from "../Form";
+import { Web3Provider } from "@ethersproject/providers";
+import { Contract } from "@ethersproject/contracts";
+import { Interface } from "@ethersproject/abi";
+import Yuan from "../yuan.json";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -19,10 +23,28 @@ const FieldCard = styled(Card)`
   }
 `;
 
-export default function (): JSX.Element {
-  const [_, setForm] = useContext(FormContext);
-  const [addresses, setAddresses] = useState("");
+const CollectionInterface = new Interface(Yuan.abi);
 
+export default function Step5(): JSX.Element {
+  const [form, setForm] = useContext(FormContext);
+  const [addresses, setAddresses] = useState("");
+  const [processing, setProcessing] = useState(false);
+
+  const processWhitelists = useCallback(async () => {
+    setProcessing(true);
+
+    const provider = new Web3Provider((window as any).ethereum);
+    const signer = provider.getSigner();
+    const contract = new Contract(form.address, CollectionInterface, signer);
+
+    const validAddresses = addresses
+      .split("\n")
+      .filter((e) => e.match(/0x[a-fA-F0-9]{40}/));
+    const tx = await contract.setWhitelist(validAddresses);
+    const receipt = await tx.wait();
+    console.log(receipt);
+    setForm((prev) => ({ ...prev, step: 6 }));
+  }, [addresses]);
   return (
     <StepBox>
       <Typography variant="subtitle1" gutterBottom>
@@ -59,9 +81,12 @@ export default function (): JSX.Element {
       >
         <Button
           variant="contained"
-          onClick={() => setForm((prev) => ({ ...prev, step: 6 }))}
+          onClick={() => {
+            processWhitelists();
+          }}
+          disabled={processing}
         >
-          Finish
+          {processing ? "Processing" : "Finish"}
         </Button>
       </Box>
     </StepBox>

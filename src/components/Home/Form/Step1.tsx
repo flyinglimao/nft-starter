@@ -6,6 +6,7 @@ import {
   CardContent,
   InputAdornment,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
@@ -20,7 +21,7 @@ const FieldCard = styled(Card)`
   }
 `;
 
-export default function (): JSX.Element {
+export default function Step1(): JSX.Element {
   const [collectionImageName, setCollectionImageName] = useState<string>("");
   const [form, setForm] = useContext(FormContext);
 
@@ -127,8 +128,17 @@ export default function (): JSX.Element {
                     type="file"
                     style={{ display: "none" }}
                     onChange={(evt) => {
-                      if (evt.target.files?.[0])
+                      if (evt.target.files?.[0]) {
                         setCollectionImageName(evt.target.files?.[0].name);
+                        const fileReader = new FileReader();
+                        fileReader.onloadend = (evt) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            collectionImage: evt.target.result as string,
+                          }));
+                        };
+                        fileReader.readAsDataURL(evt.target.files?.[0]);
+                      }
                     }}
                   />
                   <Button variant="contained" component="span">
@@ -225,12 +235,40 @@ export default function (): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <Button
-          variant="contained"
-          onClick={() => setForm((prev) => ({ ...prev, step: 2 }))}
+        <Tooltip
+          title={
+            !form.collectionName
+              ? "Collection name can't be empty"
+              : !form.collectionSymbol
+              ? "Collection symbol can't be empty"
+              : !form.collectionDescription
+              ? "Collection description can't be empty"
+              : !form.collectionImage
+              ? "Collection image can't be empty"
+              : ""
+          }
+          placement="left"
         >
-          Next
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  step: 2,
+                }))
+              }
+              disabled={
+                !form.collectionName ||
+                !form.collectionSymbol ||
+                !form.collectionDescription ||
+                !form.collectionImage
+              }
+            >
+              Next
+            </Button>
+          </span>
+        </Tooltip>
       </Box>
     </StepBox>
   );

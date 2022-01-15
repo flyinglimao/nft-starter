@@ -22,6 +22,8 @@ export interface Token {
   tokenAttributes: Array<{ type: string; value: string }>;
   tokenAmount: number;
   tokenWebsite: string;
+  tokenAnimationURL: string;
+  tokenYoutubeURL: string;
 }
 export interface Form {
   collectionName: string;
@@ -38,7 +40,6 @@ export interface Form {
   saleEndAt: Date;
   quotaPerAddr: number;
 
-  maxSupply: number;
   blindBox: Token;
   tokens: Token[];
 
@@ -47,12 +48,13 @@ export interface Form {
   introduction: string;
 
   step: number;
+  address: string;
 }
 export const FormContext = createContext<
   [Form, React.Dispatch<React.SetStateAction<Form>>] | null
 >(null);
 
-export default function (): JSX.Element {
+export default function Form(): JSX.Element {
   const formState = useState<Form>({
     collectionName: "",
     collectionSymbol: "",
@@ -66,7 +68,6 @@ export default function (): JSX.Element {
     saleStartAt: new Date(),
     saleEndAt: new Date(new Date().getTime() + 86400 * 1000 * 7),
     quotaPerAddr: 1,
-    maxSupply: 0,
     blindBox: {
       tokenImage:
         "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NIS0v7DwAEmgIyK17SHAAAAABJRU5ErkJggg==",
@@ -75,12 +76,15 @@ export default function (): JSX.Element {
       tokenAttributes: [],
       tokenAmount: 0,
       tokenWebsite: "",
+      tokenAnimationURL: "",
+      tokenYoutubeURL: "",
     },
     tokens: [],
     saleWebsite: "",
     banner: "",
     introduction: "",
     step: 1,
+    address: "",
   });
 
   useEffect(() => {

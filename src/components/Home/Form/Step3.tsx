@@ -16,6 +16,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
@@ -166,12 +167,14 @@ function AttributesTable(props: {
   );
 }
 
-export default function (): JSX.Element {
+export default function Step3(): JSX.Element {
   const [form, setForm] = useContext(FormContext);
   const [editingIndex, setEditingIndex] = useState(-2); // -1: blind box
   const [attributes, setAttributes] = useState<
     Array<{ type: string; value: string }>
   >([]);
+
+  const totalAmount = form.tokens.reduce((a, b) => a + b.tokenAmount, 0);
 
   useEffect(() => {
     if (editingIndex === -1) {
@@ -212,6 +215,8 @@ export default function (): JSX.Element {
               tokenAttributes: [],
               tokenAmount: 1,
               tokenWebsite: "",
+              tokenAnimationURL: "",
+              tokenYoutubeURL: "",
             },
           ],
         }));
@@ -238,19 +243,15 @@ export default function (): JSX.Element {
             Max Supply
           </Typography>
           <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
-            The maximum amount of tokens in your collection.
+            The maximum amount of tokens in your collection, it's automaticly
+            computed according to amount of tokens.
           </Typography>
           <TextField
             label="Max Supply *"
             variant="standard"
             type="number"
-            value={form.maxSupply}
-            onChange={(evt) =>
-              setForm((prev) => ({
-                ...prev,
-                maxSupply: parseInt(evt.target.value) || 1,
-              }))
-            }
+            value={totalAmount}
+            disabled
             fullWidth
           />
         </CardContent>
@@ -442,6 +443,94 @@ export default function (): JSX.Element {
                 }
               }}
             />
+            {editingIndex !== -1 && (
+              <TextField
+                label="Token Amount *"
+                variant="standard"
+                type="number"
+                fullWidth
+                value={form.tokens[editingIndex]?.tokenAmount}
+                onChange={(evt) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    tokens: [
+                      ...prev.tokens.slice(0, editingIndex),
+                      {
+                        ...prev.tokens[editingIndex],
+                        tokenAmount: parseInt(evt.target.value) || 1,
+                      },
+                      ...prev.tokens.slice(editingIndex + 1),
+                    ],
+                  }));
+                }}
+              />
+            )}
+            <TextField
+              label="Token Animation URL"
+              variant="standard"
+              fullWidth
+              value={
+                editingIndex === -1
+                  ? form.blindBox.tokenAnimationURL
+                  : form.tokens[editingIndex]?.tokenAnimationURL
+              }
+              onChange={(evt) => {
+                if (editingIndex === -1) {
+                  setForm((prev) => ({
+                    ...prev,
+                    blindBox: {
+                      ...prev.blindBox,
+                      tokenAnimationURL: evt.target.value,
+                    },
+                  }));
+                } else {
+                  setForm((prev) => ({
+                    ...prev,
+                    tokens: [
+                      ...prev.tokens.slice(0, editingIndex),
+                      {
+                        ...prev.tokens[editingIndex],
+                        tokenAnimationURL: evt.target.value,
+                      },
+                      ...prev.tokens.slice(editingIndex + 1),
+                    ],
+                  }));
+                }
+              }}
+            />
+            <TextField
+              label="Token Youtube URL"
+              variant="standard"
+              fullWidth
+              value={
+                editingIndex === -1
+                  ? form.blindBox.tokenYoutubeURL
+                  : form.tokens[editingIndex]?.tokenYoutubeURL
+              }
+              onChange={(evt) => {
+                if (editingIndex === -1) {
+                  setForm((prev) => ({
+                    ...prev,
+                    blindBox: {
+                      ...prev.blindBox,
+                      tokenYoutubeURL: evt.target.value,
+                    },
+                  }));
+                } else {
+                  setForm((prev) => ({
+                    ...prev,
+                    tokens: [
+                      ...prev.tokens.slice(0, editingIndex),
+                      {
+                        ...prev.tokens[editingIndex],
+                        tokenYoutubeURL: evt.target.value,
+                      },
+                      ...prev.tokens.slice(editingIndex + 1),
+                    ],
+                  }));
+                }
+              }}
+            />
             <TextField
               label="Token Website"
               variant="standard"
@@ -488,7 +577,7 @@ export default function (): JSX.Element {
               }}
             >
               <Button variant="contained" onClick={() => setEditingIndex(-2)}>
-                FINISH
+                Save
               </Button>
               {editingIndex >= 0 && (
                 <Button
@@ -502,6 +591,7 @@ export default function (): JSX.Element {
                     }));
                     setEditingIndex(-2);
                   }}
+                  color="error"
                 >
                   DELETE
                 </Button>
@@ -517,12 +607,20 @@ export default function (): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <Button
-          variant="contained"
-          onClick={() => setForm((prev) => ({ ...prev, step: 4 }))}
+        <Tooltip
+          title={totalAmount < 1 ? "Max supply can't be less than 1" : ""}
+          placement="left"
         >
-          Next
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              disabled={totalAmount < 1}
+              onClick={() => setForm((prev) => ({ ...prev, step: 4 }))}
+            >
+              Next
+            </Button>
+          </span>
+        </Tooltip>
         <Button
           variant="text"
           color="secondary"

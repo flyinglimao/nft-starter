@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -12,6 +12,9 @@ import styled from "@emotion/styled";
 import MDEditor from "react-markdown-editor-lite";
 import MarkdownIt from "markdown-it";
 import { FormContext } from "../Form";
+import { Web3Provider } from "@ethersproject/providers";
+import { ContractFactory } from "@ethersproject/contracts";
+import Yuan from "../yuan.json";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -24,10 +27,36 @@ const FieldCard = styled(Card)`
 
 const mdParser = new MarkdownIt();
 
-export default function (): JSX.Element {
+export default function Step4(): JSX.Element {
   const [form, setForm] = useContext(FormContext);
-
   const [bannerImageName, setBannerImageName] = useState<string>("");
+  const [processing, setProcessing] = useState(false);
+
+  const deployContract = useCallback(async () => {
+    if (!(window as any).ethereum) throw new Error("Wallet not detected");
+
+    const provider = new Web3Provider((window as any).ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const contractFactory = new ContractFactory(
+      Yuan.abi,
+      Yuan.bytecode,
+      signer
+    );
+    const contract = await contractFactory.deploy(
+      form.collectionName,
+      form.collectionSymbol,
+      form.tokens.reduce((a, b) => a + b.tokenAmount, 0),
+      form.quotaPerAddr,
+      "",
+      Math.floor(form.saleStartAt.getTime() / 1000),
+      Math.floor(form.saleEndAt.getTime() / 1000),
+      form.saleMode === "free",
+      ""
+    );
+    await contract.deployTransaction.wait();
+    setForm((prev) => ({ ...prev, address: contract.address }));
+  }, []);
 
   return (
     <StepBox>
@@ -163,19 +192,28 @@ export default function (): JSX.Element {
       >
         <Button
           variant="contained"
-          onClick={() =>
-            setForm((prev) => ({
-              ...prev,
-              step: form.saleMode === "whitelist" ? 5 : 6,
-            }))
-          }
+          onClick={async () => {
+            try {
+              setProcessing(true);
+              await deployContract();
+              setForm((prev) => ({
+                ...prev,
+                step: form.saleMode === "whitelist" ? 5 : 6,
+              }));
+            } catch (err) {
+              setProcessing(false);
+              console.error(err);
+            }
+          }}
+          disabled={processing}
         >
-          Deploy
+          {processing ? "Processing" : "Deploy"}
         </Button>
         <Button
           variant="text"
           color="secondary"
           onClick={() => setForm((prev) => ({ ...prev, step: 3 }))}
+          disabled={processing}
         >
           Back
         </Button>
