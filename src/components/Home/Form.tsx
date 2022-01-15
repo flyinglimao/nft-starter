@@ -21,6 +21,7 @@ interface Token {
   tokenDescription: string;
   tokenAttributes: Array<{ type: string; value: string }>;
   tokenAmount: number;
+  tokenWebsite: string;
 }
 interface Form {
   collectionName: string;
@@ -73,6 +74,7 @@ export default function (): JSX.Element {
       tokenDescription: "Waiting to be open",
       tokenAttributes: [],
       tokenAmount: 0,
+      tokenWebsite: "",
     },
     tokens: [],
     saleWebsite: "",
@@ -82,7 +84,6 @@ export default function (): JSX.Element {
   });
 
   useEffect(() => {
-    console.log("yo");
     window.scrollTo({ left: 0, top: 200, behavior: "smooth" });
   }, [formState[0].step]);
 
