@@ -50,6 +50,22 @@ export default function (props: {
       <FieldCard>
         <CardContent>
           <Typography variant="h5" gutterBottom>
+            Collection Symbol
+          </Typography>
+          <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
+            The symbol of your NFT collection. This may be used in users'
+            wallet.
+          </Typography>
+          <TextField
+            label="Enter Collection Symbol *"
+            variant="standard"
+            fullWidth
+          />
+        </CardContent>
+      </FieldCard>
+      <FieldCard>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
             Collection Description
           </Typography>
           <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
@@ -74,7 +90,7 @@ export default function (props: {
             and other apps (e.g. OpenSea).
           </Typography>
           <TextField
-            label="Enter Collection Description *"
+            label="Enter Collection Image *"
             variant="standard"
             fullWidth
             disabled
@@ -152,6 +168,7 @@ export default function (props: {
           </Typography>
           <TextField
             label="Enter Collection Royalty Recipient"
+            placeholder="0x"
             variant="standard"
             fullWidth
           />
