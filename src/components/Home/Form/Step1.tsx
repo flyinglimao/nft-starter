@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
+import { FormContext } from "../Form";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -19,10 +20,10 @@ const FieldCard = styled(Card)`
   }
 `;
 
-export default function (props: {
-  collectionImageName: string;
-  setCollectionImageName: React.Dispatch<React.SetStateAction<string>>;
-}): JSX.Element {
+export default function (): JSX.Element {
+  const [collectionImageName, setCollectionImageName] = useState<string>("");
+  const [form, setForm] = useContext(FormContext);
+
   return (
     <StepBox>
       <Typography variant="subtitle1" gutterBottom>
@@ -44,6 +45,13 @@ export default function (props: {
             label="Enter Collection Name *"
             variant="standard"
             fullWidth
+            value={form.collectionName}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionName: evt.target.value || "",
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
@@ -60,6 +68,13 @@ export default function (props: {
             label="Enter Collection Symbol *"
             variant="standard"
             fullWidth
+            value={form.collectionSymbol}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionSymbol: evt.target.value || "",
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
@@ -70,13 +85,21 @@ export default function (props: {
           </Typography>
           <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
             The description of your NFT collection. This will be used in the
-            Sale Page and other apps (e.g. OpenSea).
+            other apps (e.g. OpenSea). If you need to provide some information
+            about the sale, there is another place for this later.
           </Typography>
           <TextField
             label="Enter Collection Description *"
             variant="standard"
             fullWidth
             multiline
+            value={form.collectionDescription}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionDescription: evt.target.value || "",
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
@@ -94,7 +117,7 @@ export default function (props: {
             variant="standard"
             fullWidth
             disabled
-            value={props.collectionImageName}
+            value={collectionImageName}
             InputProps={{
               endAdornment: (
                 <label htmlFor="collection-img">
@@ -105,9 +128,7 @@ export default function (props: {
                     style={{ display: "none" }}
                     onChange={(evt) => {
                       if (evt.target.files?.[0])
-                        props.setCollectionImageName(
-                          evt.target.files?.[0].name
-                        );
+                        setCollectionImageName(evt.target.files?.[0].name);
                     }}
                   />
                   <Button variant="contained" component="span">
@@ -133,6 +154,13 @@ export default function (props: {
             label="Enter Collection Website"
             variant="standard"
             fullWidth
+            value={form.collectionWebsite}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionWebsite: evt.target.value || "",
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
@@ -149,11 +177,20 @@ export default function (props: {
             label="Enter Collection Royalty"
             variant="standard"
             type="number"
-            defaultValue={0}
             fullWidth
             InputProps={{
               endAdornment: <InputAdornment position="end">%</InputAdornment>,
             }}
+            value={(form.collectionRoyalty / 100).toLocaleString("en", {
+              maximumFractionDigits: 2,
+              useGrouping: false,
+            })}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionRoyalty: parseFloat(evt.target.value) * 100 || 0,
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
@@ -171,9 +208,30 @@ export default function (props: {
             placeholder="0x"
             variant="standard"
             fullWidth
+            value={form.collectionRoyaltyRecipient}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                collectionRoyaltyRecipient: evt.target.value || "",
+              }))
+            }
           />
         </CardContent>
       </FieldCard>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row-reverse",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => setForm((prev) => ({ ...prev, step: 2 }))}
+        >
+          Next
+        </Button>
+      </Box>
     </StepBox>
   );
 }

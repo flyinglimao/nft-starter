@@ -3,6 +3,8 @@ import { Root, Routes, addPrefetchExcludes } from "react-static";
 import { Router } from "@reach/router";
 import { Global, css } from "@emotion/react";
 
+import "react-markdown-editor-lite/lib/index.css";
+
 // Any routes that start with 'dynamic' will be treated as non-static routes
 addPrefetchExcludes(["dynamic"]);
 

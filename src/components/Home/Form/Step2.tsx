@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Box,
+  Button,
   Card,
   CardContent,
   FormControlLabel,
@@ -14,6 +15,7 @@ import DateTimePicker from "@mui/lab/DateTimePicker";
 import styled from "@emotion/styled";
 import { LocalizationProvider } from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import { FormContext } from "../Form";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -30,6 +32,8 @@ const SaleModeRadioGroup = styled(RadioGroup)`
 `;
 
 export default function (): JSX.Element {
+  const [form, setForm] = useContext(FormContext);
+
   return (
     <StepBox>
       <Typography variant="subtitle1" gutterBottom>
@@ -46,7 +50,16 @@ export default function (): JSX.Element {
           <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
             The initial offering mechanism of your NFT collection.
           </Typography>
-          <SaleModeRadioGroup aria-label="sale-mode" defaultValue="free">
+          <SaleModeRadioGroup
+            aria-label="sale-mode"
+            value={form.saleMode}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                saleMode: evt.target.value || "",
+              }))
+            }
+          >
             <FormControlLabel
               value="free"
               control={<Radio />}
@@ -66,7 +79,8 @@ export default function (): JSX.Element {
                 <>
                   <Typography variant="body1">Whitelisted Mint</Typography>
                   <Typography variant="body2" style={{ color: "gray" }}>
-                    Only people who in a list can mint.
+                    Only people who in a list can mint. You can set whitelists
+                    in step 5.
                   </Typography>
                 </>
               }
@@ -110,7 +124,13 @@ export default function (): JSX.Element {
           </Typography>
           <SaleModeRadioGroup
             aria-label="distribution-mode"
-            defaultValue="direct"
+            value={form.distributionMode}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                distributionMode: evt.target.value || "",
+              }))
+            }
           >
             <FormControlLabel
               value="direct"
@@ -154,8 +174,13 @@ export default function (): JSX.Element {
                 <TextField {...props} fullWidth variant="standard" />
               )}
               label="Start of the Sale *"
-              onChange={() => {}}
-              value={undefined}
+              value={form.saleStartAt}
+              onChange={(val) =>
+                setForm((prev) => ({
+                  ...prev,
+                  saleStartAt: val,
+                }))
+              }
             />
           </LocalizationProvider>
         </CardContent>
@@ -177,8 +202,13 @@ export default function (): JSX.Element {
                 <TextField {...props} fullWidth variant="standard" />
               )}
               label="End of the Sale *"
-              onChange={() => {}}
-              value={undefined}
+              value={form.saleEndAt}
+              onChange={(val) =>
+                setForm((prev) => ({
+                  ...prev,
+                  saleEndAt: val,
+                }))
+              }
             />
           </LocalizationProvider>
         </CardContent>
@@ -196,11 +226,38 @@ export default function (): JSX.Element {
             label="Quota for an address *"
             variant="standard"
             type="number"
-            defaultValue={0}
+            value={form.quotaPerAddr}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                quotaPerAddr: parseInt(evt.target.value) || 1,
+              }))
+            }
             fullWidth
           />
         </CardContent>
       </FieldCard>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row-reverse",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => setForm((prev) => ({ ...prev, step: 3 }))}
+        >
+          Next
+        </Button>
+        <Button
+          variant="text"
+          color="secondary"
+          onClick={() => setForm((prev) => ({ ...prev, step: 1 }))}
+        >
+          Back
+        </Button>
+      </Box>
     </StepBox>
   );
 }

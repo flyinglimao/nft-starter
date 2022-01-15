@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -19,6 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
+import { FormContext } from "../Form";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -43,7 +44,9 @@ const DropzoneBox = styled(Box)`
 `;
 
 export default function (): JSX.Element {
-  const [tokenModalOpen, setTokenModalOpen] = useState(false);
+  const [form, setForm] = useContext(FormContext);
+  const [editingIndex, setEditingIndex] = useState(-2); // -1: blind box
+
   return (
     <StepBox>
       <Typography variant="subtitle1" gutterBottom>
@@ -64,44 +67,50 @@ export default function (): JSX.Element {
             label="Max Supply *"
             variant="standard"
             type="number"
-            defaultValue={1}
+            value={form.maxSupply}
+            onChange={(evt) =>
+              setForm((prev) => ({
+                ...prev,
+                maxSupply: parseInt(evt.target.value) || 1,
+              }))
+            }
             fullWidth
           />
         </CardContent>
       </FieldCard>
-      {/* only when blindbox */}
-      <FieldCard>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Blind Box
-          </Typography>
-          <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
-            The setting will be applied to all tokens before revealed.
-          </Typography>
-          <TokenCard>
-            <CardActionArea sx={{ display: "flex" }}>
-              <TokenImgPreview image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NIS0v7DwAEmgIyK17SHAAAAABJRU5ErkJggg==" />
-              <Box sx={{ flex: "1", height: "200px", overflow: "auto" }}>
-                <CardContent
-                  sx={{
-                    position: "relative",
-                    paddingBottom: "calc(24px + 0.75rem) !important",
-                    height: "calc(100% - 40px - 0.75rem)",
-                  }}
-                >
-                  <Typography variant="h6" gutterBottom>
-                    Token Name
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    Token description
-                  </Typography>
-                </CardContent>
-              </Box>
-            </CardActionArea>
-          </TokenCard>
-        </CardContent>
-      </FieldCard>
-      {/* only when blindbox */}
+      {form.distributionMode === "blind-box" && (
+        <FieldCard>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>
+              Blind Box
+            </Typography>
+            <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
+              The setting will be applied to all tokens before revealed.
+            </Typography>
+            <TokenCard>
+              <CardActionArea sx={{ display: "flex" }}>
+                <TokenImgPreview image={form.blindBox.tokenImage} />
+                <Box sx={{ flex: "1", height: "200px", overflow: "auto" }}>
+                  <CardContent
+                    sx={{
+                      position: "relative",
+                      paddingBottom: "calc(24px + 0.75rem) !important",
+                      height: "calc(100% - 40px - 0.75rem)",
+                    }}
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {form.blindBox.tokenName}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {form.blindBox.tokenDescription}
+                    </Typography>
+                  </CardContent>
+                </Box>
+              </CardActionArea>
+            </TokenCard>
+          </CardContent>
+        </FieldCard>
+      )}
       <FieldCard>
         <CardContent>
           <Typography variant="h5" gutterBottom>
@@ -110,33 +119,35 @@ export default function (): JSX.Element {
           <Typography variant="body2" gutterBottom style={{ color: "gray" }}>
             The setting will be applied to all tokens before revealed.
           </Typography>
-          <TokenCard>
-            <CardActionArea sx={{ display: "flex" }}>
-              <TokenImgPreview image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NIS0v7DwAEmgIyK17SHAAAAABJRU5ErkJggg==" />
-              <Box sx={{ flex: "1", height: "200px", overflow: "auto" }}>
-                <CardContent
-                  sx={{
-                    position: "relative",
-                    paddingBottom: "calc(24px + 0.75rem) !important",
-                    height: "calc(100% - 40px - 0.75rem)",
-                  }}
-                >
-                  <Typography variant="h6" gutterBottom>
-                    Token Name
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    Token description
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ position: "absolute", bottom: "24px" }}
+          {form.tokens.map((token, id) => (
+            <TokenCard key={"token-" + id}>
+              <CardActionArea sx={{ display: "flex" }}>
+                <TokenImgPreview image={token.tokenImage} />
+                <Box sx={{ flex: "1", height: "200px", overflow: "auto" }}>
+                  <CardContent
+                    sx={{
+                      position: "relative",
+                      paddingBottom: "calc(24px + 0.75rem) !important",
+                      height: "calc(100% - 40px - 0.75rem)",
+                    }}
                   >
-                    Supply: 10
-                  </Typography>
-                </CardContent>
-              </Box>
-            </CardActionArea>
-          </TokenCard>
+                    <Typography variant="h6" gutterBottom>
+                      {token.tokenName}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom>
+                      {token.tokenDescription}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ position: "absolute", bottom: "24px" }}
+                    >
+                      Supply: {token.tokenAmount}
+                    </Typography>
+                  </CardContent>
+                </Box>
+              </CardActionArea>
+            </TokenCard>
+          ))}
           <DropzoneBox>
             <p>
               Drop or <Button variant="text">Pick Files</Button> to add new
@@ -146,8 +157,8 @@ export default function (): JSX.Element {
         </CardContent>
       </FieldCard>
       <Modal
-        open={tokenModalOpen}
-        onClose={() => setTokenModalOpen(false)}
+        open={editingIndex >= -1}
+        onClose={() => setEditingIndex(-2)}
         sx={{ overflow: "auto", height: "100%" }}
       >
         <Container
@@ -209,6 +220,27 @@ export default function (): JSX.Element {
           </Paper>
         </Container>
       </Modal>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row-reverse",
+          justifyContent: "space-between",
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => setForm((prev) => ({ ...prev, step: 4 }))}
+        >
+          Next
+        </Button>
+        <Button
+          variant="text"
+          color="secondary"
+          onClick={() => setForm((prev) => ({ ...prev, step: 2 }))}
+        >
+          Back
+        </Button>
+      </Box>
     </StepBox>
   );
 }
