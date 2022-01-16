@@ -71,6 +71,7 @@ export default function () {
     tokens: Token[];
     address: string;
     quotaPerAddr: number;
+    chainId: number;
   }>({
     collectionName: "@@Collection Name@@",
     tokens: [],
@@ -80,6 +81,7 @@ export default function () {
     saleEndAt: 2147483647,
     address: "0xc4801799922ea4be29173df8ac07f07d1374e6ac",
     quotaPerAddr: 1,
+    chainId: 80001,
   });
 
   useEffect(() => {
@@ -107,7 +109,7 @@ export default function () {
       provider.current.on("network", (newNetwork: Network) => {
         provider.current.listAccounts().then((accs) => {
           if (accs.length === 0) setWalletState(WalletState.NOT_CONNECTED);
-          else if (newNetwork.chainId !== 80001)
+          else if (newNetwork.chainId !== form.chainId)
             setWalletState(WalletState.WRONG_NETWORK);
           else setWalletState(WalletState.NONE);
         });
@@ -125,13 +127,13 @@ export default function () {
     await provider.current.send("eth_requestAccounts", []);
     setWalletState(WalletState.WRONG_NETWORK);
     const { chainId } = await provider.current.getNetwork();
-    if (chainId === 80001) setWalletState(WalletState.NONE);
+    if (chainId === form.chainId) setWalletState(WalletState.NONE);
   }, []);
 
   const changeNetwork = useCallback(async () => {
     try {
       await provider.current.send("wallet_switchEthereumChain", [
-        { chainId: "0x" + (80001).toString(16) },
+        { chainId: "0x" + form.chainId.toString(16) },
       ]);
     } catch (switchError) {
       // This error code indicates that the chain has not been added to MetaMask.
@@ -139,15 +141,25 @@ export default function () {
         try {
           await provider.current.send("wallet_addEthereumChain", [
             {
-              chainId: "0x" + (80001).toString(16),
-              chainName: "Polygon Mainnet",
+              chainId: "0x" + form.chainId.toString(16),
+              chainName:
+                "Polygon " +
+                (form.chainId === 137 ? "Mainnet" : "Testnet Mumbai"),
               nativeCurrency: {
                 name: "MATIC",
                 symbol: "MATIC",
                 decimals: 18,
               },
-              blockExplorerUrls: ["https://polygonscan.com/"],
-              rpcUrls: ["https://polygon-rpc.com/"],
+              blockExplorerUrls: [
+                form.chainId === 137
+                  ? "https://polygonscan.com/"
+                  : "https://mumbai.polygonscan.com",
+              ],
+              rpcUrls: [
+                form.chainId === 137
+                  ? "https://polygon-rpc.com/"
+                  : "https://matic-mumbai.chainstacklabs.com",
+              ],
             },
           ]);
           await provider.current.send("wallet_switchEthereumChain", [

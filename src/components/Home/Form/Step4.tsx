@@ -64,7 +64,6 @@ export default function Step4(): JSX.Element {
         "metadata.json"
       )
     );
-    console.log((await contractURIPromise).data.cid);
 
     const provider = new Web3Provider((window as any).ethereum);
     await provider.send("eth_requestAccounts", []);
@@ -122,8 +121,8 @@ export default function Step4(): JSX.Element {
       contractURI // contractURI
     );
     await contract.deployTransaction.wait();
-    await submitSale({ ...form, address: contract.address });
-    setForm((prev) => ({ ...prev, address: contract.address }));
+    await submitSale({ ...form, address: contract.address, chainId });
+    setForm((prev) => ({ ...prev, address: contract.address, chainId }));
   };
 
   return (

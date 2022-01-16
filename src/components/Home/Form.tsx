@@ -50,6 +50,7 @@ export interface Form {
   step: number;
   address: string;
   domainToken: string;
+  chainId: number;
 }
 export const FormContext = createContext<
   [Form, React.Dispatch<React.SetStateAction<Form>>] | null
@@ -87,6 +88,7 @@ export default function Form(): JSX.Element {
     step: 1,
     address: "",
     domainToken: "",
+    chainId: 80001,
   });
 
   useEffect(() => {
