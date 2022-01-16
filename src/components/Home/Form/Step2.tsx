@@ -156,6 +156,7 @@ export default function Step2(): JSX.Element {
                   </Typography>
                 </>
               }
+              disabled
             />
           </SaleModeRadioGroup>
         </CardContent>
