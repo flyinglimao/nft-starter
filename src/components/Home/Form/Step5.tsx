@@ -35,6 +35,39 @@ export default function Step5(): JSX.Element {
 
     const provider = new Web3Provider((window as any).ethereum);
     const signer = provider.getSigner();
+    const { chainId } = await provider.getNetwork();
+    if (chainId !== 137 && chainId !== 80001) {
+      try {
+        await provider.send("wallet_switchEthereumChain", [{ chainId: 137 }]);
+        return true;
+      } catch (switchError) {
+        // This error code indicates that the chain has not been added to MetaMask.
+        if (switchError.code === 4902) {
+          try {
+            await provider.send("wallet_addEthereumChain", [
+              {
+                chainId: 137,
+                chainName: "Polygon Mainnet",
+                nativeCurrency: {
+                  name: "MATIC",
+                  symbol: "MATIC",
+                  decimals: 18,
+                },
+                blockExplorerUrls: ["https://polygonscan.com/"],
+                rpcUrls: ["https://polygon-rpc.com/"],
+              },
+            ]);
+            await provider.send("wallet_switchEthereumChain", [
+              { chainId: 137 },
+            ]);
+            return true;
+          } catch (addError) {
+            throw new Error("Change network failed");
+          }
+        }
+        throw new Error("Change network failed");
+      }
+    }
     const contract = new Contract(form.address, CollectionInterface, signer);
 
     const validAddresses = addresses
