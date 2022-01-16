@@ -18,6 +18,8 @@ import { ContractFactory } from "@ethersproject/contracts";
 import Yuan from "../../../yuan.json";
 import { registerDomain } from "../../../utils/registerDomain";
 import { submitSale } from "../../../utils/submitSale";
+import { uploadTokens } from "../../../utils/uploadTokens";
+import { uploadToIPFS } from "../../../utils/uploadToIPFS";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -42,6 +44,27 @@ export default function Step4(): JSX.Element {
 
   const deployContract = async () => {
     if (!(window as any).ethereum) throw new Error("Wallet not detected");
+    const baseURIPromise = uploadTokens(form.tokens);
+    const contractURIPromise = uploadToIPFS(
+      new File(
+        [
+          new Blob([
+            JSON.stringify({
+              name: form.collectionName,
+              description: form.collectionDescription,
+              image: form.collectionImage,
+              external_link:
+                form.collectionWebsite ||
+                `https://${form.saleWebsite}.nftstarter.one`,
+              seller_fee_basis_points: form.collectionRoyalty,
+              fee_recipient: form.collectionRoyaltyRecipient,
+            }),
+          ]),
+        ],
+        "metadata.json"
+      )
+    );
+    console.log((await contractURIPromise).data.cid);
 
     const provider = new Web3Provider((window as any).ethereum);
     await provider.send("eth_requestAccounts", []);
@@ -84,16 +107,19 @@ export default function Step4(): JSX.Element {
       Yuan.bytecode,
       signer
     );
+    const baseURI = "ipfs://" + (await baseURIPromise).data.cid;
+    const contractURI = "ipfs://" + (await contractURIPromise).data.cid;
+    console.log(baseURI);
     const contract = await contractFactory.deploy(
       form.collectionName,
       form.collectionSymbol,
       form.tokens.reduce((a, b) => a + b.tokenAmount, 0),
       form.quotaPerAddr,
-      "",
+      baseURI, // baseURI
       Math.floor(form.saleStartAt.getTime() / 1000),
       Math.floor(form.saleEndAt.getTime() / 1000),
       form.saleMode === "free",
-      ""
+      contractURI // contractURI
     );
     await contract.deployTransaction.wait();
     await submitSale({ ...form, address: contract.address });
