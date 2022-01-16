@@ -78,7 +78,7 @@ export default function () {
     introduction: "@@introduction@@",
     saleStartAt: 1,
     saleEndAt: 2147483647,
-    address: "0x91f6f85525765D9C0B91C64acb793782671137c8",
+    address: "0xc4801799922ea4be29173df8ac07f07d1374e6ac",
     quotaPerAddr: 1,
   });
 
@@ -89,7 +89,7 @@ export default function () {
       form.saleStartAt = new Date(form.saleStartAt);
       form.saleEndAt = new Date(form.saleEndAt);
       if (!form.address)
-        form.address = "0x91f6f85525765D9C0B91C64acb793782671137c8";
+        form.address = "0xc4801799922ea4be29173df8ac07f07d1374e6ac";
       setForm(form);
     }
   }, []);
@@ -214,7 +214,11 @@ export default function () {
           <Tooltip
             title={
               ErrorMessage[walletState] ||
-              (!isWhitelisted ? "Not in whitelist" : "")
+              (!isWhitelisted
+                ? "Not in whitelist"
+                : form.quotaPerAddr - minted <= 0
+                ? "Can't mint more"
+                : "")
             }
             placement="top"
           >
@@ -287,7 +291,7 @@ export default function () {
                           });
                       }
                     }}
-                    disabled={!isWhitelisted}
+                    disabled={!isWhitelisted || form.quotaPerAddr - minted <= 0}
                   >
                     Mint
                   </Button>
