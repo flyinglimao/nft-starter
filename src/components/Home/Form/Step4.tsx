@@ -14,7 +14,7 @@ import MarkdownIt from "markdown-it";
 import { FormContext } from "../Form";
 import { Web3Provider } from "@ethersproject/providers";
 import { ContractFactory } from "@ethersproject/contracts";
-import Yuan from "../yuan.json";
+import Yuan from "../../../yuan.json";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -207,6 +207,9 @@ export default function Step4(): JSX.Element {
                   tokens: form.tokens,
                   banner: form.banner,
                   introduction: form.introduction,
+                  saleStartAt: form.saleStartAt.getTime(),
+                  saleEndAt: form.saleEndAt.getTime(),
+                  quotaPerAddr: form.quotaPerAddr,
                 })
               );
               open("/preview", "_blank");

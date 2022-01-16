@@ -12,7 +12,7 @@ import { FormContext } from "../Form";
 import { Web3Provider } from "@ethersproject/providers";
 import { Contract } from "@ethersproject/contracts";
 import { Interface } from "@ethersproject/abi";
-import Yuan from "../yuan.json";
+import Yuan from "../../../yuan.json";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
