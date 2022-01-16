@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Button,
@@ -6,6 +6,7 @@ import {
   CardContent,
   InputAdornment,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import styled from "@emotion/styled";
@@ -15,6 +16,8 @@ import { FormContext } from "../Form";
 import { Web3Provider } from "@ethersproject/providers";
 import { ContractFactory } from "@ethersproject/contracts";
 import Yuan from "../../../yuan.json";
+import { registerDomain } from "../../../utils/registerDomain";
+import { submitSale } from "../../../utils/submitSale";
 
 const StepBox = styled(Box)``;
 const FieldCard = styled(Card)`
@@ -31,8 +34,13 @@ export default function Step4(): JSX.Element {
   const [form, setForm] = useContext(FormContext);
   const [bannerImageName, setBannerImageName] = useState<string>("");
   const [processing, setProcessing] = useState(false);
+  const [domainAvailable, setDomainAvailable] = useState(false);
+  const [domainMessage, setDomainMessage] = useState<[boolean, string]>([
+    false,
+    "",
+  ]);
 
-  const deployContract = useCallback(async () => {
+  const deployContract = async () => {
     if (!(window as any).ethereum) throw new Error("Wallet not detected");
 
     const provider = new Web3Provider((window as any).ethereum);
@@ -88,8 +96,9 @@ export default function Step4(): JSX.Element {
       ""
     );
     await contract.deployTransaction.wait();
+    await submitSale({ ...form, address: contract.address });
     setForm((prev) => ({ ...prev, address: contract.address }));
-  }, []);
+  };
 
   return (
     <StepBox>
@@ -111,18 +120,41 @@ export default function Step4(): JSX.Element {
             label="URL of your sale *"
             variant="standard"
             fullWidth
+            error={domainMessage[0]}
+            helperText={domainMessage[1]}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">.nftstarter.one</InputAdornment>
               ),
             }}
             value={form.saleWebsite}
-            onChange={(evt) =>
+            onChange={(evt) => {
               setForm((prev) => ({
                 ...prev,
                 saleWebsite: evt.target.value || "",
-              }))
-            }
+              }));
+              setDomainAvailable(false);
+              setDomainMessage([false, ""]);
+            }}
+            onBlur={(evt) => {
+              setDomainMessage([false, "Checking domain name..."]);
+              registerDomain(evt.target.value)
+                .then(({ data }) => {
+                  if (data.ok) {
+                    setDomainAvailable(true);
+                    setForm((prev) => ({
+                      ...prev,
+                      domainToken: data.token,
+                    }));
+                    setDomainMessage([false, ""]);
+                  } else {
+                    setDomainMessage([true, "Domain is not available"]);
+                  }
+                })
+                .catch(() => {
+                  setDomainMessage([true, "Server down"]);
+                });
+            }}
           />
         </CardContent>
       </FieldCard>
@@ -226,25 +258,32 @@ export default function Step4(): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <Button
-          variant="contained"
-          onClick={async () => {
-            try {
-              setProcessing(true);
-              await deployContract();
-              setForm((prev) => ({
-                ...prev,
-                step: form.saleMode === "whitelist" ? 5 : 6,
-              }));
-            } catch (err) {
-              setProcessing(false);
-              console.error(err);
-            }
-          }}
-          disabled={processing}
+        <Tooltip
+          title={!domainAvailable ? "Domain not available" : ""}
+          placement="left"
         >
-          {processing ? "Processing" : "Deploy"}
-        </Button>
+          <span>
+            <Button
+              variant="contained"
+              onClick={async () => {
+                try {
+                  setProcessing(true);
+                  await deployContract();
+                  setForm((prev) => ({
+                    ...prev,
+                    step: form.saleMode === "whitelist" ? 5 : 6,
+                  }));
+                } catch (err) {
+                  setProcessing(false);
+                  console.error(err);
+                }
+              }}
+              disabled={processing || !domainAvailable}
+            >
+              {processing ? "Processing" : "Deploy"}
+            </Button>
+          </span>
+        </Tooltip>
         <Button
           variant="text"
           color="secondary"

@@ -49,6 +49,7 @@ export interface Form {
 
   step: number;
   address: string;
+  domainToken: string;
 }
 export const FormContext = createContext<
   [Form, React.Dispatch<React.SetStateAction<Form>>] | null
@@ -85,6 +86,7 @@ export default function Form(): JSX.Element {
     introduction: "",
     step: 1,
     address: "",
+    domainToken: "",
   });
 
   useEffect(() => {

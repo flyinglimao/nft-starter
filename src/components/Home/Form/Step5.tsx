@@ -84,8 +84,10 @@ export default function Step5(): JSX.Element {
         STEP 5
       </Typography>
       <Typography variant="h4" gutterBottom>
-        Add Addresses to Whitelist, it may need more than one transaction if the
-        list is too long.
+        Add Addresses to Whitelist
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        It may need more than one transaction if the list is too long.
       </Typography>
       <FieldCard>
         <CardContent>
